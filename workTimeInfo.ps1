@@ -15,6 +15,7 @@ function workTimeInfo ($start, $end) {
     } |
     sort{$_.date};
     $temp;
+    $totalWorkingTime;
 }
 
 $workTimes = workTimeInfo "2017/01/01 00:00:00" "2017/12/31 23:59:59";
