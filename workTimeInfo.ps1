@@ -1,10 +1,14 @@
-function workTimeInfo ($start, $end) {
+function makeEvenTime ([System.TimeSpan]$time) {
+    $addTimeSpan = [System.TimeSpan]::FromSeconds(449);
+    [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($addTimeSpan).TotalMinutes / 15) * 15);
+};
+function workTimeInfo ($start, $end, $isEven) {
     $restTime    = [System.TimeSpan]::FromHours(1);
     $workingDays = (Get-EventLog system -After $start -Before $end) + (Get-EventLog application -After $start -Before $end) |
     group{$_.TimeWritten.ToShortDateString()} |
     %{
-        $tempBootTime     = ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum;
-        $tempShutDownTime = ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum;
+        $tempBootTime     = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum} else {($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum};
+        $tempShutDownTime = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum} else {($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum};
         @{
             date         = $_.Name; 
             dayOfWeek    = [System.Convert]::ToInt32(($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek);
@@ -33,10 +37,12 @@ function workTimeInfo ($start, $end) {
 
 $inputStart = Read-Host "開始日？(yyyy/MM/dd)"
 $inputEnd   = Read-Host "終了日？(yyyy/MM/dd)"
+$evenTime   = Read-Host "均す？(y/n)";
 
 $start    = "$inputStart 00:00:00";
 $end      = "$inputEnd 23:59:59";
-$workDays = workTimeInfo $start $end;
+$isEven   = if ($evenTime -eq "y") {$true} else {$false};
+$workDays = workTimeInfo $start $end $isEven;
 [String]::Join("`t", "日付", "曜日", "出勤時間", "退勤時間", "稼働時間(休憩時間:1hを除く)");
 $workDays.workingDays | %{[String]::Join("`t", $_.date, $_.dayOfWeek, $_.boot, $_.shutdown, $_.workingTime)};
 [String]::Join("`t", "平日稼働日数", $workDays.subTotalWorkDays);
