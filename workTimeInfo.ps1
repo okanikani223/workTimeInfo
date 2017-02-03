@@ -1,22 +1,47 @@
-function workTimeInfo ($start, $end) {
-    $restTime = [System.TimeSpan]::FromHours(1);
-    $temp     = (Get-EventLog System -After $start -Before $end) + (Get-EventLog Application -After $start -Before $end) |
+function workTimeInfo ([String]$start, [String]$end) {
+    $restTime    = [System.TimeSpan]::FromHours(1);
+    $workingDays = (Get-EventLog system -After $start -Before $end) + (Get-EventLog application -After $start -Before $end) |
     group{$_.TimeWritten.ToShortDateString()} |
     %{
-        $tempBoot     = ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum;
-        $tempShutDown = ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum;
+        $tempBootTime     = ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum;
+        $tempShutDownTime = ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum;
         @{
-            date          = $_.Name;
-            dayOfWeek     = ($_.Group.TimeWritten | select DayOfWeek -First 1);
-            boot          = $tempBoot;
-            shutDown      = $tempShutDown;
-            workingTimes  = $tempShutDown - $tempBoot - $restTime;
+            date         = $_.Name; 
+            dayOfWeek    = [System.Convert]::ToInt32(($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek);
+            # dayOfWeekStr = ($_.Group.TimeWritten | select * -First 1).ToString("ddd");
+            boot         = $tempBootTime; 
+            shutdown     = $tempShutDownTime;
+            workingTime  = $tempShutDownTime - $tempBootTime -$restTime;
         }
-    } |
-    sort{$_.date};
-    $temp;
-    $totalWorkingTime;
-}
+    } | sort{$_.date}
+    $subTotalWorkDays        = ($workingDays | ?{$_.dayOfWeek -ne 0 -and $_.dayOfWeek -ne 6} | measure).Count;
+    $subTotalWorkTime        = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeek -ne 0 -and $_.dayOfWeek -ne 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
+    $subTotalHolidayWork     = ($workingDays | ?{$_.dayOfWeek -eq 0 -or $_.dayOfWeek -eq 6} | measure).Count;
+    $subTotalHolidayWorkTime = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeek -eq 0 -or $_.dayOfWeek -eq 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
+    $totalWorkDays           = $subTotalWorkDays + $subTotalHolidayWork;
+    $totalWorkTime           = $subTotalWorkTime + $subTotalHolidayWorkTime;
+    @{
+        workingDays             = $workingDays;
+        subTotalWorkDays        = $subTotalWorkDays;
+        subTotalWorkTime        = $subTotalWorkTime;
+        subTotalHolidayWork     = $subTotalHolidayWork;
+        subTotalHolidayWorkTime = $subTotalHolidayWorkTime;
+        totalWorkDays           = $totalWorkDays;
+        totalWorkTime           = $totalWorkTime;
+    };
+};
 
-$workTimes = workTimeInfo "2017/01/01 00:00:00" "2017/12/31 23:59:59";
-$workTimes | %{[String]::Join("`t", $_.date, $_.dayOfWeek, $_.boot, $_.shutDown, $_.workingTimes)};
+$inputStart = Read-Host "äJénì˙ÅH(yyyy/MM/dd)"
+$inputEnd   = Read-Host "èIóπì˙ÅH(yyyy/MM/dd)"
+
+$start    = "$inputStart 00:00:00";
+$end      = "$inputEnd 23:59:59";
+$workDays = workTimeInfo $start $end;
+[String]::Join("`t", "ì˙ït", "ójì˙", "èoãŒéûä‘", "ëﬁãŒéûä‘", "â“ì≠éûä‘(ãxåeéûä‘:1hÇèúÇ≠)");
+$workDays.workingDays | %{[String]::Join("`t", $_.date, $_.dayOfWeek, $_.boot, $_.shutdown, $_.workingTime)};
+[String]::Join("`t", "ïΩì˙â“ì≠ì˙êî", $workDays.subTotalWorkDays);
+[String]::Join("`t", "ïΩì˙â“ì≠éûä‘", $workDays.subTotalWorkTime.TotalHours);
+[String]::Join("`t", "ãxì˙â“ì≠ì˙êî", $workDays.subTotalHolidayWork);
+[String]::Join("`t", "ãxì˙â“ì≠éûä‘", $workDays.subTotalHolidayWorkTime.TotalHours);
+[String]::Join("`t", "ëçâ“ì≠ì˙êî"  , $workDays.totalWorkDays);
+[String]::Join("`t", "ëçâ“ì≠ì˙êî"  , $workDays.totalWorkTime.TotalHours);
