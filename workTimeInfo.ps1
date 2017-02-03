@@ -1,4 +1,4 @@
-function workTimeInfo ([String]$start, [String]$end) {
+function workTimeInfo ($start, $end) {
     $restTime    = [System.TimeSpan]::FromHours(1);
     $workingDays = (Get-EventLog system -After $start -Before $end) + (Get-EventLog application -After $start -Before $end) |
     group{$_.TimeWritten.ToShortDateString()} |
