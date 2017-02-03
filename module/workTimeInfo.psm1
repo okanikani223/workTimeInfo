@@ -1,9 +1,9 @@
+$adjustmentMinuts = [System.TimeSpan]::FromSeconds(449);
+$restTime         = [System.TimeSpan]::FromHours(1);
 function makeEvenTime ([System.TimeSpan]$time) {
-    $addTimeSpan = [System.TimeSpan]::FromSeconds(449);
-    [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($addTimeSpan).TotalMinutes / 15) * 15);
+    [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($adjustmentMinuts).TotalMinutes / 15) * 15);
 };
 function workTimeInfo ($start, $end, $isEven) {
-    $restTime    = [System.TimeSpan]::FromHours(1);
     $workingDays = (Get-EventLog system -After $start -Before $end) + (Get-EventLog application -After $start -Before $end) |
     group{$_.TimeWritten.ToShortDateString()} |
     %{
@@ -35,4 +35,4 @@ function workTimeInfo ($start, $end, $isEven) {
     };
 };
 
-Export-ModuleMember -Function workTimeInfo
+# Export-ModuleMember -Function workTimeInfo

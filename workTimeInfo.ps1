@@ -3,15 +3,15 @@ $inputStart = Read-Host "ŠJn“úH(yyyy/MM/dd)"
 $inputEnd   = Read-Host "I—¹“úH(yyyy/MM/dd)"
 $evenTime   = Read-Host "‹Ï‚·H(y/n)";
 
-$start    = "$inputStart 00:00:00";
-$end      = "$inputEnd 23:59:59";
-$isEven   = $evenTime -eq "y";
-$workDays = workTimeInfo $start $end $isEven;
+$start        = "$inputStart 00:00:00";
+$end          = "$inputEnd 23:59:59";
+$isEven       = $evenTime -eq "y";
+$workTimeInfo = workTimeInfo $start $end $isEven;
 [String]::Join("`t", "“ú•t", "—j“ú", "o‹ÎŠÔ", "‘Ş‹ÎŠÔ", "‰Ò“­ŠÔ(‹xŒeŠÔ:1h‚ğœ‚­)");
-$workDays.workingDays | %{[String]::Join("`t", $_.date, $_.dayOfWeek, $_.boot, $_.shutdown, $_.workingTime)};
-[String]::Join("`t", "•½“ú‰Ò“­“ú”", $workDays.subTotalWorkDays);
-[String]::Join("`t", "•½“ú‰Ò“­ŠÔ", $workDays.subTotalWorkTime.TotalHours);
-[String]::Join("`t", "‹x“ú‰Ò“­“ú”", $workDays.subTotalHolidayWork);
-[String]::Join("`t", "‹x“ú‰Ò“­ŠÔ", $workDays.subTotalHolidayWorkTime.TotalHours);
-[String]::Join("`t", "‘‰Ò“­“ú”"  , $workDays.totalWorkDays);
-[String]::Join("`t", "‘‰Ò“­“ú”"  , $workDays.totalWorkTime.TotalHours);
+$workTimeInfo.workingDays | %{[String]::Join("`t", $_.date, $_.dayOfWeek, $_.boot, $_.shutdown, $_.workingTime)};
+[String]::Join("`t", "•½“ú‰Ò“­“ú”", $workTimeInfo.subTotalWorkDays);
+[String]::Join("`t", "•½“ú‰Ò“­ŠÔ", $workTimeInfo.subTotalWorkTime.TotalHours);
+[String]::Join("`t", "‹x“ú‰Ò“­“ú”", $workTimeInfo.subTotalHolidayWork);
+[String]::Join("`t", "‹x“ú‰Ò“­ŠÔ", $workTimeInfo.subTotalHolidayWorkTime.TotalHours);
+[String]::Join("`t", "‘‰Ò“­“ú”"  , $workTimeInfo.totalWorkDays);
+[String]::Join("`t", "‘‰Ò“­“ú”"  , $workTimeInfo.totalWorkTime.TotalHours);
