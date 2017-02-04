@@ -1,8 +1,8 @@
-$adjustmentMinuts = [System.TimeSpan]::FromSeconds(449);
 $restTime         = [System.TimeSpan]::FromHours(1);
-# 時間を15分単位で均す関数
-function makeEvenTime ([System.TimeSpan]$time) {
-    [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($adjustmentMinuts).TotalMinutes / 15) * 15);
+# 時間をtimeUnit(分)単位で均す関数
+function makeEvenTime ([System.TimeSpan]$time, [int]$timeUnit) {
+    $adjustmentMinuts = [System.TimeSpan]::FromSeconds((($timeUnit * 60) / 2) - 1);
+    [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($adjustmentMinuts).TotalMinutes / $timeUnit) * $timeUnit);
 };
 # 指定したログ名、期間でイベントログを取得する関数
 function getEventLog ($logName, $start, $end) {
@@ -19,11 +19,11 @@ function getEventLog ($logName, $start, $end) {
 # 　７．平日と休日の総稼働時間の合計
 # isEven フラグで、時間の均し処理(15分単位)の有無を変更可能
 function workTimeInfo ($start, $end, $isEven) {
-    $workingDays = (getEventLog "System" $start $end) + (getEventLog "Application" $start $end) + (getEventLog "Security" $start $end) |
+    $workingDays = (getEventLog "System" $start $end) + (getEventLog "Application" $start $end) <#+ (getEventLog "Security" $start $end)#> |
     group{$_.TimeWritten.ToShortDateString()} |
     %{
-        $tempBootTime     = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum} else {($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum};
-        $tempShutDownTime = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum} else {($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum};
+        $tempBootTime     = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum 15} else {($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum};
+        $tempShutDownTime = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum 15} else {($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum};
         @{
             date         = $_.Name; 
             dayOfWeek    = [System.Convert]::ToInt32(($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek);
@@ -47,6 +47,15 @@ function workTimeInfo ($start, $end, $isEven) {
         subTotalHolidayWorkTime = $subTotalHolidayWorkTime;
         totalWorkDays           = $totalWorkDays;
         totalWorkTime           = $totalWorkTime;
+    };
+};
+# 年月(yyyyMM)を渡すと月初と月末の日時文字列を返す関数
+function startEndDays ([String]$yyyyMM) {
+    $yyyy = $yyyyMM.Substring(0, 4);
+    $mm   = $yyyyMM.Substring(4, 2);
+    @{
+        start = $yyyy + "/" + $mm + "/" + "01 00:00:00";
+        end   = $yyyy + "/" + $mm + "/" + "31 23:59:59";
     };
 };
 
