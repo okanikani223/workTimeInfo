@@ -5,18 +5,18 @@ $currentFolder = Split-Path -Parent $MyInvocation.MyCommand.Path;
 Import-Module $currentFolder/module/workTimeInfo.psm1;
 Import-Module $currentFolder/module/DateTimeUtil.psm1;
 
-$target_ym  = Read-Host "‘ÎÛ”NŒH(yyyyMM)";
-$evenTime   = Read-Host "‹Ï‚·H(y/n)";
+$target_ym  = Read-Host "å¯¾è±¡å¹´æœˆï¼Ÿ(yyyyMM)";
+$evenTime   = Read-Host "å‡ã™ï¼Ÿ(y/n)";
 
 $target_ym    = if ($target_ym -eq $null -or $target_ym -eq "") {[System.DateTime]::Now.ToString("yyyyMM")} else {$target_ym};
 $startEnd     = if ($om) {oneMonthDays $target_ym} else {oneMonthDaysMiddle $target_ym};
 $isEven       = if ($evenTime -eq $null -or $evenTime -eq "" -or $evenTime -eq "y") {$true} else {$false};
 $workTimeInfo = workTimeInfo $startEnd.start $startEnd.end $isEven;
-[String]::Join("`t", "“ú•t", "—j“ú", "o‹ÎŠÔ", "‘Ş‹ÎŠÔ", "‰Ò“­ŠÔ(‹xŒeŠÔ:1h‚ğœ‚­)");
+[String]::Join("`t", "æ—¥ä»˜", "æ›œæ—¥", "å‡ºå‹¤æ™‚é–“", "é€€å‹¤æ™‚é–“", "ç¨¼åƒæ™‚é–“(ä¼‘æ†©æ™‚é–“:1hã‚’é™¤ã)");
 $workTimeInfo.workingDays | %{[String]::Join("`t", $_.date, $_.dayOfWeek, $_.boot, $_.shutdown, $_.workingTime)};
-[String]::Join("`t", "•½“ú‰Ò“­“ú”", $workTimeInfo.subTotalWorkDays);
-[String]::Join("`t", "•½“ú‰Ò“­ŠÔ", $workTimeInfo.subTotalWorkTime.TotalHours);
-[String]::Join("`t", "‹x“ú‰Ò“­“ú”", $workTimeInfo.subTotalHolidayWork);
-[String]::Join("`t", "‹x“ú‰Ò“­ŠÔ", $workTimeInfo.subTotalHolidayWorkTime.TotalHours);
-[String]::Join("`t", "‘‰Ò“­“ú”"  , $workTimeInfo.totalWorkDays);
-[String]::Join("`t", "‘‰Ò“­“ú”"  , $workTimeInfo.totalWorkTime.TotalHours);
+[String]::Join("`t", "å¹³æ—¥ç¨¼åƒæ—¥æ•°", $workTimeInfo.subTotalWorkDays);
+[String]::Join("`t", "å¹³æ—¥ç¨¼åƒæ™‚é–“", $workTimeInfo.subTotalWorkTime.TotalHours);
+[String]::Join("`t", "ä¼‘æ—¥ç¨¼åƒæ—¥æ•°", $workTimeInfo.subTotalHolidayWork);
+[String]::Join("`t", "ä¼‘æ—¥ç¨¼åƒæ™‚é–“", $workTimeInfo.subTotalHolidayWorkTime.TotalHours);
+[String]::Join("`t", "ç·ç¨¼åƒæ—¥æ•°"  , $workTimeInfo.totalWorkDays);
+[String]::Join("`t", "ç·ç¨¼åƒæ—¥æ•°"  , $workTimeInfo.totalWorkTime.TotalHours);
