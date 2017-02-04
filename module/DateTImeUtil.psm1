@@ -39,5 +39,3 @@ function endDateTime ($yyyy, $mm, $day) {
 function dateTime ($yyyy, $mm, $day, $time) {
     [String]::Join(" ", [String]::Join("/", $yyyy, $mm, $day), $time);
 };
-
-# Export-ModuleMember -Function DateTimeUtil
