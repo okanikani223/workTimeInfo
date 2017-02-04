@@ -1,2 +1,2 @@
 # workTimeInfo
-PowerShell script (Windows only) that calculates working time from event log
+PowerShell script that calculates working time from event log
