@@ -1,4 +1,4 @@
-# ”NŒ(yyyyMM)‚©‚çŒ‰‚ÆŒ––‚Ì“ú‚ğ•Ô‚·B
+# å¹´æœˆ(yyyyMM)ã‹ã‚‰æœˆåˆã¨æœˆæœ«ã®æ—¥æ™‚ã‚’è¿”ã™ã€‚
 function oneMonthDays ([String]$yyyyMM) {
     $yyyy        = $yyyyMM.Substring(0, 4);
     $mm          = $yyyyMM.Substring(4, 2);
@@ -7,7 +7,7 @@ function oneMonthDays ([String]$yyyyMM) {
     daysWithRange $yyyy $mm "01" $daysInMonth;
 };
 
-# ”NŒ(yyyyMM)‚©‚ç‘OŒ’†“ú`¡Œ’†“ú‚Ì“ú‚ğ•Ô‚·B
+# å¹´æœˆ(yyyyMM)ã‹ã‚‰å‰æœˆä¸­æ—¥ï½ä»Šæœˆä¸­æ—¥ã®æ—¥æ™‚ã‚’è¿”ã™ã€‚
 function oneMonthDaysMiddle ([String]$yyyyMM) {
     $yyyy        = $yyyyMM.Substring(0, 4);
     $mm          = $yyyyMM.Substring(4, 2);
@@ -20,7 +20,7 @@ function oneMonthDaysMiddle ([String]$yyyyMM) {
     };
 };
 
-# ”NŒ‚ÆŠJn“úAI—¹“ú‚©‚ç“ú‚É®Œ`‚µ‚½•¶š—ñ‚ğ•Ô‚·B
+# å¹´æœˆã¨é–‹å§‹æ—¥ã€çµ‚äº†æ—¥ã‹ã‚‰æ—¥æ™‚ã«æ•´å½¢ã—ãŸæ–‡å­—åˆ—ã‚’è¿”ã™ã€‚
 function daysWithRange ($yyyy, $mm, $startDay, $endDay) {
     @{
         start = startDateTime $yyyy $mm $startDay;

@@ -1,26 +1,26 @@
 $restTime         = [System.TimeSpan]::FromHours(1);
 
-# ŠÔ‚ğtimeUnit(•ª)’PˆÊ‚Å‹Ï‚µ‚Ä•Ô‚·B
+# æ™‚é–“ã‚’timeUnit(åˆ†)å˜ä½ã§å‡ã—ã¦è¿”ã™ã€‚
 function makeEvenTime ([System.TimeSpan]$time, [int]$timeUnit) {
     $adjustmentMinuts = [System.TimeSpan]::FromSeconds((($timeUnit * 60) / 2) - 1);
     [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($adjustmentMinuts).TotalMinutes / $timeUnit) * $timeUnit);
 };
 
-# w’è‚µ‚½ƒƒO–¼AŠúŠÔ‚ÅƒCƒxƒ“ƒgƒƒO‚ğ•Ô‚·B
+# æŒ‡å®šã—ãŸãƒ­ã‚°åã€æœŸé–“ã§ã‚¤ãƒ™ãƒ³ãƒˆãƒ­ã‚°ã‚’è¿”ã™ã€‚
 function getEventLog ($logName, $start, $end) {
     Get-EventLog $logName -After $start -Before $end;
 };
 
-# ƒCƒxƒ“ƒgƒƒO‚©‚çw’è‚³‚ê‚½”ÍˆÍ‚ÌŠúŠÔ‚ÅA‹ÆŠÔî•ñ‚ğ•Ô‚·B
-# A‹ÆŠÔî•ñ‚Ì“à—e‚ÍˆÈ‰º‚Ì’Ê‚è
-# @‚PD“ú–ˆ‚Ìo‹ÎA‘Ş‹ÎA‰Ò“­ŠÔ(‹xŒeŠÔ‚ğœ‚­)
-# @‚QD•½“ú‚Ì‘‰Ò“­“ú”
-# @‚RD•½“ú‚Ì‘‰Ò“­ŠÔ
-# @‚SD‹x“ú‚Ì‘‰Ò“­“ú”
-# @‚TD‹x“ú‚Ì‘‰Ò“­ŠÔ
-# @‚UD•½“ú‚Æ‹x“ú‚Ì‘‰Ò“­“ú”‚Ì‡Œv
-# @‚VD•½“ú‚Æ‹x“ú‚Ì‘‰Ò“­ŠÔ‚Ì‡Œv
-# isEven ƒtƒ‰ƒO‚ÅAŠÔ‚Ì‹Ï‚µˆ—(15•ª’PˆÊ)‚Ì—L–³‚ğ•ÏX‰Â”\
+# ã‚¤ãƒ™ãƒ³ãƒˆãƒ­ã‚°ã‹ã‚‰æŒ‡å®šã•ã‚ŒãŸç¯„å›²ã®æœŸé–“ã§å°±æ¥­æ™‚é–“æƒ…å ±ã‚’è¿”ã™ã€‚
+# å°±æ¥­æ™‚é–“æƒ…å ±ã®å†…å®¹ã¯ä»¥ä¸‹ã®é€šã‚Š
+# ã€€ï¼‘ï¼æ—¥æ¯ã®å‡ºå‹¤ã€é€€å‹¤ã€ç¨¼åƒæ™‚é–“(ä¼‘æ†©æ™‚é–“ã‚’é™¤ã)
+# ã€€ï¼’ï¼å¹³æ—¥ã®ç·ç¨¼åƒæ—¥æ•°
+# ã€€ï¼“ï¼å¹³æ—¥ã®ç·ç¨¼åƒæ™‚é–“
+# ã€€ï¼”ï¼ä¼‘æ—¥ã®ç·ç¨¼åƒæ—¥æ•°
+# ã€€ï¼•ï¼ä¼‘æ—¥ã®ç·ç¨¼åƒæ™‚é–“
+# ã€€ï¼–ï¼å¹³æ—¥ã¨ä¼‘æ—¥ã®ç·ç¨¼åƒæ—¥æ•°ã®åˆè¨ˆ
+# ã€€ï¼—ï¼å¹³æ—¥ã¨ä¼‘æ—¥ã®ç·ç¨¼åƒæ™‚é–“ã®åˆè¨ˆ
+# isEven ãƒ•ãƒ©ã‚°ã§ã€æ™‚é–“ã®å‡ã—å‡¦ç†(15åˆ†å˜ä½)ã®æœ‰ç„¡ã‚’å¤‰æ›´å¯èƒ½
 function workTimeInfo ($start, $end, $isEven) {
     $workingDays = (getEventLog "System" $start $end) + (getEventLog "Application" $start $end) <#+ (getEventLog "Security" $start $end)#> |
     group{$_.TimeWritten.ToShortDateString()} |
