@@ -1,16 +1,19 @@
 $restTime         = [System.TimeSpan]::FromHours(1);
-# 時間をtimeUnit(分)単位で均す関数
+
+# 時間をtimeUnit(分)単位で均して返す。
 function makeEvenTime ([System.TimeSpan]$time, [int]$timeUnit) {
     $adjustmentMinuts = [System.TimeSpan]::FromSeconds((($timeUnit * 60) / 2) - 1);
     [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($adjustmentMinuts).TotalMinutes / $timeUnit) * $timeUnit);
 };
-# 指定したログ名、期間でイベントログを取得する関数
+
+# 指定したログ名、期間でイベントログを返す。
 function getEventLog ($logName, $start, $end) {
     Get-EventLog $logName -After $start -Before $end;
 };
-# イベントログから指定された範囲の期間で作業時間情報を取得する関数
-# 取得する作業時間情報は以下の通り
-# 　１．日毎の起動、終了、稼働時間
+
+# イベントログから指定された範囲の期間で就業時間情報を返す。
+# 就業時間情報の内容は以下の通り
+# 　１．日毎の出勤、退勤、稼働時間(休憩時間を除く)
 # 　２．平日の総稼働日数
 # 　３．平日の総稼働時間
 # 　４．休日の総稼働日数
@@ -47,15 +50,6 @@ function workTimeInfo ($start, $end, $isEven) {
         subTotalHolidayWorkTime = $subTotalHolidayWorkTime;
         totalWorkDays           = $totalWorkDays;
         totalWorkTime           = $totalWorkTime;
-    };
-};
-# 年月(yyyyMM)を渡すと月初と月末の日時文字列を返す関数
-function startEndDays ([String]$yyyyMM) {
-    $yyyy = $yyyyMM.Substring(0, 4);
-    $mm   = $yyyyMM.Substring(4, 2);
-    @{
-        start = $yyyy + "/" + $mm + "/" + "01 00:00:00";
-        end   = $yyyy + "/" + $mm + "/" + "31 23:59:59";
     };
 };
 
