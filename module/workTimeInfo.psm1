@@ -1,5 +1,5 @@
 $restTime         = [System.TimeSpan]::FromHours(1);
-
+$startRestTime    = [System.TimeSpan]::FromHours(12);
 # 時間をtimeUnit(分)単位で均して返す。
 function makeEvenTime ([System.TimeSpan]$time, [int]$timeUnit) {
     $adjustmentMinuts = [System.TimeSpan]::FromSeconds((($timeUnit * 60) / 2) - 1);
@@ -33,7 +33,7 @@ function workTimeInfo ($start, $end, $isEven) {
             # dayOfWeekStr = ($_.Group.TimeWritten | select * -First 1).ToString("ddd");
             boot         = $tempBootTime; 
             shutdown     = $tempShutDownTime;
-            workingTime  = $tempShutDownTime - $tempBootTime -$restTime;
+            workingTime  = if ($tempShutDownTime -lt $startRestTime) {$tempShutDownTime - $tempBootTime} else {$tempShutDownTime - $tempBootTime -$restTime};
         }
     } | sort{$_.date}
     $subTotalWorkDays        = ($workingDays | ?{$_.dayOfWeek -ne 0 -and $_.dayOfWeek -ne 6} | measure).Count;
