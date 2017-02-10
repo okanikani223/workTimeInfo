@@ -1,9 +1,13 @@
 $restTime         = [System.TimeSpan]::FromHours(1);
-$startRestTime    = [System.TimeSpan]::FromHours(12);
+$startRestTime    = [System.TimeSpan]::FromHours(13);
+$limitTime        = [System.TimeSpan]::FromMinutes(1433);
+$fixedWorkTime    = [System.TimeSpan]::FromMinutes(465);
 # 時間をtimeUnit(分)単位で均して返す。
 function makeEvenTime ([System.TimeSpan]$time, [int]$timeUnit) {
-    $adjustmentMinuts = [System.TimeSpan]::FromSeconds((($timeUnit * 60) / 2) - 1);
-    [System.TimeSpan]::FromMinutes([Math]::Truncate($time.Add($adjustmentMinuts).TotalMinutes / $timeUnit) * $timeUnit);
+    $convertFromMinuts = $timeUnit * 60; 
+    if ($time -gt $limitTime) { return [System.TimeSpan]::FromSeconds([Math]::Truncate($time.TotalSeconds / $convertFromMinuts) * $convertFromMinuts);}
+    $adjustmentMinuts  = [System.TimeSpan]::FromSeconds(($convertFromMinuts / 2) - 1);
+    [System.TimeSpan]::FromSeconds([Math]::Truncate($time.Add($adjustmentMinuts).TotalSeconds / $convertFromMinuts) * $convertFromMinuts);
 };
 
 # 指定したログ名、期間でイベントログを返す。
@@ -27,13 +31,15 @@ function workTimeInfo ($start, $end, $isEven) {
     %{
         $tempBootTime     = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum 15} else {($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum};
         $tempShutDownTime = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum 15} else {($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum};
+        $tempWorkingTime  = if ($tempShutDownTime -lt $startRestTime) {$tempShutDownTime - $tempBootTime} else {$tempShutDownTime - $tempBootTime -$restTime};
         @{
             date         = $_.Name; 
             dayOfWeek    = [System.Convert]::ToInt32(($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek);
             # dayOfWeekStr = ($_.Group.TimeWritten | select * -First 1).ToString("ddd");
             boot         = $tempBootTime; 
             shutdown     = $tempShutDownTime;
-            workingTime  = if ($tempShutDownTime -lt $startRestTime) {$tempShutDownTime - $tempBootTime} else {$tempShutDownTime - $tempBootTime -$restTime};
+            workingTime  = $tempWorkingTime;
+            overTime     = $tempWorkingTime - $fixedWorkTime;
         }
     } | sort{$_.date}
     $subTotalWorkDays        = ($workingDays | ?{$_.dayOfWeek -ne 0 -and $_.dayOfWeek -ne 6} | measure).Count;
