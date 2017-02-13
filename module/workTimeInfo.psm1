@@ -2,6 +2,7 @@ $restTime         = [System.TimeSpan]::FromHours(1);
 $startRestTime    = [System.TimeSpan]::FromHours(13);
 $limitTime        = [System.TimeSpan]::FromMinutes(1433);
 $fixedWorkTime    = [System.TimeSpan]::FromMinutes(465);
+$defaultOverTime  = [System.TimeSpan]::FromHours(0);
 # 時間をtimeUnit(分)単位で均して返す。
 function makeEvenTime ([System.TimeSpan]$time, [int]$timeUnit) {
     $convertFromMinuts = $timeUnit * 60; 
@@ -33,19 +34,19 @@ function workTimeInfo ($start, $end, $isEven) {
         $tempShutDownTime = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum 15} else {($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum};
         $tempWorkingTime  = if ($tempShutDownTime -lt $startRestTime) {$tempShutDownTime - $tempBootTime} else {$tempShutDownTime - $tempBootTime -$restTime};
         @{
-            date         = $_.Name; 
-            dayOfWeek    = [System.Convert]::ToInt32(($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek);
-            # dayOfWeekStr = ($_.Group.TimeWritten | select * -First 1).ToString("ddd");
-            boot         = $tempBootTime; 
-            shutdown     = $tempShutDownTime;
-            workingTime  = $tempWorkingTime;
-            overTime     = $tempWorkingTime - $fixedWorkTime;
+            date          = $_.Name; 
+            dayOfWeekCode = [System.Convert]::ToInt32(($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek);
+            dayOfWeek     = ($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek;
+            boot          = $tempBootTime; 
+            shutdown      = $tempShutDownTime;
+            workingTime   = $tempWorkingTime;
+            overTime      = if ($tempWorkingTime -gt $fixedWorkTime) {$tempWorkingTime - $fixedWorkTime} else {$defaultOverTime};
         }
     } | sort{$_.date}
-    $subTotalWorkDays        = ($workingDays | ?{$_.dayOfWeek -ne 0 -and $_.dayOfWeek -ne 6} | measure).Count;
-    $subTotalWorkTime        = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeek -ne 0 -and $_.dayOfWeek -ne 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
-    $subTotalHolidayWork     = ($workingDays | ?{$_.dayOfWeek -eq 0 -or $_.dayOfWeek -eq 6} | measure).Count;
-    $subTotalHolidayWorkTime = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeek -eq 0 -or $_.dayOfWeek -eq 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
+    $subTotalWorkDays        = ($workingDays | ?{$_.dayOfWeekCode -ne 0 -and $_.dayOfWeekCode -ne 6} | measure).Count;
+    $subTotalWorkTime        = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeekCode -ne 0 -and $_.dayOfWeekCode -ne 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
+    $subTotalHolidayWork     = ($workingDays | ?{$_.dayOfWeekCode -eq 0 -or $_.dayOfWeekCode -eq 6} | measure).Count;
+    $subTotalHolidayWorkTime = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeekCode -eq 0 -or $_.dayOfWeekCode -eq 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
     $totalWorkDays           = $subTotalWorkDays + $subTotalHolidayWork;
     $totalWorkTime           = $subTotalWorkTime + $subTotalHolidayWorkTime;
     @{
