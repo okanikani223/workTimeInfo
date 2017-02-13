@@ -30,13 +30,14 @@ function workTimeInfo ($start, $end, $isEven) {
     $workingDays = (getEventLog "System" $start $end) + (getEventLog "Application" $start $end) <#+ (getEventLog "Security" $start $end)#> |
     group{$_.TimeWritten.ToShortDateString()} |
     %{
+        $tempDayOfWeek    = ($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek;
         $tempBootTime     = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum 15} else {($_.Group.TimeWritten.TimeOfDay | measure -min).Minimum};
         $tempShutDownTime = if ($isEven) {makeEvenTime ($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum 15} else {($_.Group.TimeWritten.TimeOfDay | measure -max).Maximum};
         $tempWorkingTime  = if ($tempShutDownTime -lt $startRestTime) {$tempShutDownTime - $tempBootTime} else {$tempShutDownTime - $tempBootTime -$restTime};
         @{
             date          = $_.Name; 
-            dayOfWeekCode = [System.Convert]::ToInt32(($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek);
-            dayOfWeek     = ($_.Group.TimeWritten | select DayOfWeek -First 1).DayOfWeek;
+            dayOfWeekCode = [System.Convert]::ToInt32($tempDayOfWeek);
+            dayOfWeek     = $tempDayOfWeek;
             boot          = $tempBootTime; 
             shutdown      = $tempShutDownTime;
             workingTime   = $tempWorkingTime;
