@@ -47,18 +47,24 @@ function workTimeInfo ($start, $end, $isEven) {
     } | sort{$_.date}
     $subTotalWorkDays        = ($workingDays | ?{$_.dayOfWeekCode -ne 0 -and $_.dayOfWeekCode -ne 6} | measure).Count;
     $subTotalWorkTime        = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeekCode -ne 0 -and $_.dayOfWeekCode -ne 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
+    $subTotalOverTime        = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeekCode -ne 0 -and $_.dayOfWeekCode -ne 6} | %{$_.overTime.TotalMilliseconds} | measure -Sum).Sum);
     $subTotalHolidayWork     = ($workingDays | ?{$_.dayOfWeekCode -eq 0 -or $_.dayOfWeekCode -eq 6} | measure).Count;
     $subTotalHolidayWorkTime = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeekCode -eq 0 -or $_.dayOfWeekCode -eq 6} | %{$_.workingTime.TotalMilliseconds} | measure -Sum).Sum);
+    $subTotalHolidayOverTime = [System.TimeSpan]::FromMilliseconds(($workingDays | ?{$_.dayOfWeekCode -eq 0 -or $_.dayOfWeekCode -eq 6} | %{$_.overTime.TotalMilliseconds} | measure -Sum).Sum);
     $totalWorkDays           = $subTotalWorkDays + $subTotalHolidayWork;
     $totalWorkTime           = $subTotalWorkTime + $subTotalHolidayWorkTime;
+    $totalOverTime           = $subTotalOverTime + $subTotalHolidayOverTime;
     @{
         workingDays             = $workingDays;
         subTotalWorkDays        = $subTotalWorkDays;
         subTotalWorkTime        = $subTotalWorkTime;
+        subTotalOverTime        = $subTotalOverTime;
         subTotalHolidayWork     = $subTotalHolidayWork;
         subTotalHolidayWorkTime = $subTotalHolidayWorkTime;
+        subTotalHolidayOverTime = $subTotalHolidayOverTime;
         totalWorkDays           = $totalWorkDays;
         totalWorkTime           = $totalWorkTime;
+        totalOverTime           = $totalOverTime;
     };
 };
 
